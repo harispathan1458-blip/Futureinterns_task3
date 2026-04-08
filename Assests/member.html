@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Member registration</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f8e9e9; padding: 20px; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #333; }
+        input, select, button { width: 100%; font-size: 16px; border-radius: 8px; border: initial black ; padding: 10px; margin: 10px 0; box-sizing: border-box; }
+        button { background-color: #36e15e; color: white; border:#28a745; border-radius: 20px; cursor: pointer; }
+        button:hover { background-color: #05691a; }
+        .switch-link { text-align: center; display: block; margin-top: 10px; }
+        .hidden { display: none; }
+        .nav { display: flex; justify-content: space-between; margin-bottom: 20px; }
+        .nav a { text-decoration: none; color: #007bff; font-weight: bold; }
+        
+        #scheduleDisplay { background-image:url(footer-banner.webp) ; padding: 15px; border-left: 5px solid #28a745; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="nav">
+        <span>Member Portal</span>
+        <a href="trainer.html"></a>
+    </div>
+
+    <div id="registerSection">
+        <h2>Member Registration</h2>
+        <input type="text" id="regName" placeholder="Full Name">
+        <input type="text" id="regMobile" placeholder="Mobile Number">
+        <input type="password" id="regPass" placeholder="Password">
+        <input type="text" id="regaddr" placeholder="Address">
+        
+        <button onclick="registerMember()">Register</button>
+        <a href="#" class="switch-link" onclick="showLogin()">Already a member? Login here</a>
+    </div>
+
+    <div id="loginSection" class="hidden">
+        <h2>Member Login</h2>
+        <input type="text" id="loginMobile" placeholder="Mobile Number">
+        <input type="password" id="loginPass" placeholder="Password">
+        <button onclick="loginMember()">Login</button>
+        <a href="#" class="switch-link" onclick="showRegister()">Need to register? Click here</a>
+    </div>
+
+    <div id="dashboardSection" class="hidden">
+        <h2 id="welcomeMsg">Welcome!</h2>
+        <p><strong>Your Plan:</strong> <span id="userPlan"></span></p>
+        <hr>
+        <h3>Your Trainer Schedule</h3>
+        <div id="scheduleDisplay">
+            Loading schedule...
+        </div>
+        <button onclick="logout()" style="background-color: #dc3545; margin-top:20px;">Logout</button>
+    </div>
+</div>
+
+<script>
+    // --- Navigation Logic ---
+    function showLogin() {
+        document.getElementById('registerSection').classList.add('hidden');
+        document.getElementById('loginSection').classList.remove('hidden');
+    }
+    function showRegister() {
+        document.getElementById('loginSection').classList.add('hidden');
+        document.getElementById('registerSection').classList.remove('hidden');
+    }
+
+    // --- Core Logic ---
+    
+    function registerMember() {
+        const name = document.getElementById('regName').value;
+        const mobile = document.getElementById('regMobile').value;
+        const pass = document.getElementById('regPass').value;
+        const plan = document.getElementById('regPlan').value;
+
+        if(!name || !mobile || !pass) return alert("Please fill all fields");
+
+        // Simulate Payment
+        if(!confirm(`Simulating Payment Gateway...\nCharge: ${plan}\n\nClick OK to confirm payment.`)) return;
+
+        const member = { name, mobile, pass, plan, role: 'member', schedule: 'No schedule assigned yet.' };
+        
+        // Save to LocalStorage (Simulated Database)
+        let users = JSON.parse(localStorage.getItem('gymUsers')) || [];
+        
+        // Check if user exists
+        if(users.find(u => u.mobile === mobile)) return alert("User already exists!");
+
+        users.push(member);
+        localStorage.setItem('gymUsers', JSON.stringify(users));
+
+        alert("Registration & Payment Successful! Please Login.");
+        showLogin();
+    }
+
+    function loginMember() {
+        const mobile = document.getElementById('loginMobile').value;
+        const pass = document.getElementById('loginPass').value;
+        
+        let users = JSON.parse(localStorage.getItem('gymUsers')) || [];
+        const user = users.find(u => u.mobile === mobile && u.pass === pass && u.role === 'member');
+
+        if(user) {
+            // Login Success
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('dashboardSection').classList.remove('hidden');
+            document.getElementById('welcomeMsg').innerText = `Welcome, ${user.name}!`;
+            document.getElementById('userPlan').innerText = user.plan;
+            
+            // Load Schedule
+            loadSchedule(user.mobile);
+        } else {
+            alert("Invalid Credentials or User not found.");
+        }
+    }
+
+    function loadSchedule(mobile) {
+        // Re-fetch latest data to get updates from trainer
+        let users = JSON.parse(localStorage.getItem('gymUsers')) || [];
+        const user = users.find(u => u.mobile === mobile);
+        document.getElementById('scheduleDisplay').innerText = user.schedule || "No schedule yet.";
+    }
+
+    function logout() {
+        location.reload();
+    }
+</script>
+
+</body>
+</html>
